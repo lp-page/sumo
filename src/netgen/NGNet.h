@@ -188,7 +188,7 @@ private:
      * @param[in] node1 The first node to connect
      * @param[in] node2 The second node to connect
      */
-    void connect(NGNode* node1, NGNode* node2);
+    void connect(NGNode* node1, NGNode* node2, bool reversed = false);
 
     /// @brief return a letter code for the given integer index
     std::string alphabeticalCode(int i, int iMax);

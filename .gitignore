@@ -120,6 +120,7 @@
 /tools/libtraci/_libtraci.*
 /tools/libtraci/libtraci.py
 /tools/setup.py
+/tools/build/*
 # extracted tests
 /tests/_*
 # netedit test

@@ -102,10 +102,10 @@ NGNet::createChequerBoard(int numX, int numY, double spaceX, double spaceY, doub
             myNodeList.push_back(node);
             // create Links
             if (ix > 0) {
-                connect(findNode(ix - 1, iy), node);
+                connect(findNode(ix - 1, iy), node, iy % 2 == 1);
             }
             if (iy > 0) {
-                connect(findNode(ix, iy - 1), node);
+                connect(findNode(ix, iy - 1), node, ix % 2 == 0);
             }
         }
     }
@@ -123,8 +123,8 @@ NGNet::createChequerBoard(int numX, int numY, double spaceX, double spaceY, doub
             myNodeList.push_back(topNode);
             myNodeList.push_back(bottomNode);
             // create links
-            connect(findNode(ix, numY - 1), topNode);
-            connect(bottomNode, findNode(ix, 0));
+            connect(findNode(ix, numY - 1), topNode, ix % 2 == 0);
+            connect(bottomNode, findNode(ix, 0), ix % 2 == 0);
         }
     }
     if (xAttachLength > 0.0) {
@@ -141,8 +141,8 @@ NGNet::createChequerBoard(int numX, int numY, double spaceX, double spaceY, doub
             myNodeList.push_back(leftNode);
             myNodeList.push_back(rightNode);
             // create links
-            connect(leftNode, findNode(0, iy));
-            connect(findNode(numX - 1, iy), rightNode);
+            connect(leftNode, findNode(0, iy), iy % 2 == 1);
+            connect(findNode(numX - 1, iy), rightNode, iy % 2 == 1);
         }
     }
 }
@@ -218,10 +218,11 @@ NGNet::createSpiderWeb(int numRadDiv, int numCircles, double spaceRad, bool hasC
 
 
 void
-NGNet::connect(NGNode* node1, NGNode* node2) {
+NGNet::connect(NGNode* node1, NGNode* node2, bool reversed) {
     std::string id1 = node1->getID() + (myAlphaIDs ? "" : "to") + node2->getID();
     std::string id2 = node2->getID() + (myAlphaIDs ? "" : "to") + node1->getID();
     NGEdge* link1 = new NGEdge(id1, node1, node2, id2);
+    link1->setReversed(reversed);
     myEdgeList.push_back(link1);
 }
 
@@ -249,12 +250,23 @@ NGNet::toNB() const {
         myNetBuilder.getNodeCont().insert(ngNode->buildNBNode(myNetBuilder, perturb));
     }
     const std::string type = OptionsCont::getOptions().getString("default.type");
-    const double bidiProb = OptionsCont::getOptions().getFloat("bidi-probability");
-    for (const NGEdge* const ngEdge : myEdgeList) {
-        myNetBuilder.getEdgeCont().insert(ngEdge->buildNBEdge(myNetBuilder, type));
-        // now, let's append the reverse directions...
-        if (!ngEdge->getEndNode()->connected(ngEdge->getStartNode(), true) && RandHelper::rand() <= bidiProb) {
-            myNetBuilder.getEdgeCont().insert(ngEdge->buildNBEdge(myNetBuilder, type, true));
+    const bool bidiAlternate = OptionsCont::getOptions().getBool("bidi-alternate");
+    if (bidiAlternate)
+    {
+        for (const NGEdge* const ngEdge : myEdgeList) {
+            bool reversed = ngEdge->getReversed();
+            myNetBuilder.getEdgeCont().insert(ngEdge->buildNBEdge(myNetBuilder, type, reversed));
+        }
+    }
+    else
+    {
+        const double bidiProb = OptionsCont::getOptions().getFloat("bidi-probability");
+        for (const NGEdge* const ngEdge : myEdgeList) {
+            myNetBuilder.getEdgeCont().insert(ngEdge->buildNBEdge(myNetBuilder, type));
+            // now, let's append the reverse directions...
+            if (!ngEdge->getEndNode()->connected(ngEdge->getStartNode(), true) && RandHelper::rand() <= bidiProb) {
+                myNetBuilder.getEdgeCont().insert(ngEdge->buildNBEdge(myNetBuilder, type, true));
+            }
         }
     }
     // add splits depending on turn-lane options
