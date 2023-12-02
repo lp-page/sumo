@@ -156,6 +156,9 @@ NGFrame::fillOptions() {
     oc.addSynonyme("rand.iterations", "iterations");
     oc.addDescription("rand.iterations", "Random Network", TL("Describes how many times an edge shall be added to the net"));
 
+    oc.doRegister("bidi-alternate", new Option_Bool(false));
+    oc.addDescription("bidi-alternate", "Random Network", "Should alternate direction for each one-way edge in a grid");
+
     oc.doRegister("rand.max-distance", new Option_Float(250));
     oc.addSynonyme("rand.max-distance", "rand-max-distance", true);
     oc.addSynonyme("rand.max-distance", "max-dist");

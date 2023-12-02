@@ -98,6 +98,13 @@ public:
      */
     NBEdge* buildNBEdge(NBNetBuilder& nb, std::string type, const bool reversed = false) const;
 
+    int getReversed() const {
+        return myReversed;
+    }
+
+    void setReversed(int reversed) {
+        myReversed = reversed;
+    }
 
 private:
     /// @brief The node the edge starts at
@@ -108,6 +115,8 @@ private:
 
     /// @brief The id when building the reverse edge
     const std::string myReverseID;
+
+    bool myReversed;
 };
 
 
