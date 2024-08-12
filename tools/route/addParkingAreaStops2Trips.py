@@ -88,9 +88,13 @@ def main(options):
         outf.write("<routes>\n")
         # iterate over trips
         for trip in sumolib.xml.parse(infile, "trip", heterogeneous=True):
+            last_random_parking = None
             for stop_index in range(options.stops):
                 # obtain random parking
-                random_parking = R1.choice(parkings)
+                while True:
+                    random_parking = R1.choice(parkings)
+                    if random_parking != last_random_parking:
+                        break
                 # add child depending of durations
                 if (options.durationBegin and options.durationEnd):
                     # obtain random duration
@@ -105,6 +109,8 @@ def main(options):
                         trip.addChild("stop", {"parkingArea": random_parking.id, "until": options.until})
                 else:
                     trip.addChild("stop", {"parkingArea": random_parking.id, "duration": int(options.duration)})
+
+                last_random_parking = random_parking
             # write trip
             outf.write(trip.toXML(initialIndent="    "))
         # close route tag
